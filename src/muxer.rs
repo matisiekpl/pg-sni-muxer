@@ -3,11 +3,13 @@ use std::io;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use tokio::io::{copy_bidirectional, AsyncReadExt, AsyncWriteExt};
+use tokio::io::{AsyncReadExt, AsyncWriteExt, copy_bidirectional};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
-use tokio::sync::{watch, RwLock};
+use tokio::sync::{RwLock, watch};
 
-use crate::tls::{extract_sni_from_tls_records, read_tls_client_hello, TLS_ALERT_UNRECOGNIZED_NAME};
+use crate::tls::{
+    TLS_ALERT_UNRECOGNIZED_NAME, extract_sni_from_tls_records, read_tls_client_hello,
+};
 
 /// PostgreSQL SSLRequest code.
 const PG_SSL_REQUEST_CODE: u32 = 80877103;
@@ -46,11 +48,7 @@ impl PgSniMuxer {
     /// Sets the mapping from `hostname` to `backend` address.
     ///
     /// If a mapping for `hostname` already exists it is replaced.
-    pub async fn set_mapping(
-        &self,
-        hostname: impl Into<String>,
-        backend: SocketAddr,
-    ) {
+    pub async fn set_mapping(&self, hostname: impl Into<String>, backend: SocketAddr) {
         let hostname = hostname.into();
         let mut mappings = self.mappings.write().await;
         let old = mappings.insert(hostname.clone(), backend);
@@ -290,14 +288,22 @@ mod tests {
         muxer.set_mapping("db1.example.com", addr1).await;
         muxer.set_mapping("db2.example.com", addr2).await;
 
-        assert!(muxer.swap_mapping("db1.example.com", "db2.example.com").await);
+        assert!(
+            muxer
+                .swap_mapping("db1.example.com", "db2.example.com")
+                .await
+        );
 
         let list = muxer.list_mappings().await;
         assert_eq!(list["db1.example.com"], addr2);
         assert_eq!(list["db2.example.com"], addr1);
 
         // Swap fails when a hostname has no mapping.
-        assert!(!muxer.swap_mapping("db1.example.com", "missing.example.com").await);
+        assert!(
+            !muxer
+                .swap_mapping("db1.example.com", "missing.example.com")
+                .await
+        );
     }
 
     #[tokio::test]
@@ -306,9 +312,7 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
 
         let muxer_clone = Arc::clone(&muxer);
-        let handle = tokio::spawn(async move {
-            muxer_clone.listen(listener).await
-        });
+        let handle = tokio::spawn(async move { muxer_clone.listen(listener).await });
 
         // Give listener a moment to start, then shut it down.
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
@@ -385,5 +389,11 @@ mod tests {
         assert!(response.is_empty());
 
         muxer.break_connection();
+    }
+}
+
+impl Default for PgSniMuxer {
+    fn default() -> Self {
+        Self::new()
     }
 }
