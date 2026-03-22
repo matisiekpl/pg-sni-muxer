@@ -1,0 +1,15 @@
+[package]
+name = "pg-sni-muxer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["net", "io-util", "rt-multi-thread", "macros", "sync", "time"] }
+tracing = "0.1"
+
+[dev-dependencies]
+tracing-subscriber = "0.3"
+
+[[example]]
+name = "simple"
+path = "examples/simple.rs"
