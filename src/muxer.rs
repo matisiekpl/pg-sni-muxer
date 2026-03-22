@@ -96,7 +96,7 @@ impl PgSniMuxer {
         }
     }
 
-    /// Signals all tasks spawned by [`listen`] to shut down gracefully.
+    /// Signals all tasks spawned by [`listen`](Self::listen) to shut down gracefully.
     pub fn break_connection(&self) {
         tracing::debug!("breaking all connections (sending shutdown signal)");
         let _ = self.shutdown_tx.send(true);
@@ -148,7 +148,7 @@ impl PgSniMuxer {
         }
     }
 
-    /// Starts listening on the given address (convenience wrapper around [`listen`]).
+    /// Starts listening on the given address (convenience wrapper around [`listen`](Self::listen)).
     pub async fn listen_on(self: Arc<Self>, addr: impl ToSocketAddrs) -> io::Result<()> {
         let listener = TcpListener::bind(addr).await?;
         self.listen(listener).await
