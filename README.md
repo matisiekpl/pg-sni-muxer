@@ -1,6 +1,8 @@
 # pg-sni-muxer
 
 [![Test](https://github.com/matisiekpl/pg-sni-muxer/actions/workflows/test.yml/badge.svg)](https://github.com/matisiekpl/pg-sni-muxer/actions/workflows/test.yml)
+[![Crates.io](https://img.shields.io/crates/v/pg-sni-muxer)](https://crates.io/crates/pg-sni-muxer)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A lightweight PostgreSQL connection multiplexer that routes incoming connections to backend servers based on the **TLS
 SNI** (Server Name Indication) extracted from the client's `ClientHello`.
